@@ -1,4 +1,4 @@
-package paxos
+package main
 
 import (
 	"fmt"
@@ -18,7 +18,7 @@ type Acceptor struct {
 	// accepted number, if 0 indicate that node haven't accept any Proposal yet.
 	acceptedNumber int
 	// nil if no accepted value
-	acceptedValue interface{}
+	acceptedValue *WriteDataByLine
 	// learners id
 	learners []int
 	mutex    sync.Mutex
@@ -69,6 +69,8 @@ func (a *Acceptor) Accept(args *PaxosMsgArgs, reply *PaxosMsgReply) error {
 		fmt.Println("accept value: ", args.Value)
 		_, existed := TW.finishedTasks.Load(args.Value.TaskId)
 		if !existed {
+			fmt.Println("write to csv during paxos!!!!!!!")
+			go writeCsvByLine(Filepath+logFilename, args.Value)
 			go WriteToMap(args.Value.TaskId)
 		}
 	} else {

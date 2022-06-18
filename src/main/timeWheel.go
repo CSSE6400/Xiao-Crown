@@ -1,11 +1,10 @@
-package timewheel
+package main
 
 import (
 	"container/list"
 	"errors"
 	"fmt"
 	"net"
-	"net/rpc"
 	"strconv"
 	"sync"
 	"time"
@@ -14,7 +13,6 @@ import (
 )
 
 var TW *TimeWheel
-var p = &Proposer{}
 
 // TimeWheel
 type TimeWheel struct {
@@ -100,26 +98,6 @@ func (tw *TimeWheel) startTW() {
 	tw.isRunning = true
 }
 
-// This method starts a RPC server for tw
-func (tw *TimeWheel) serverTW() {
-	rpcs := rpc.NewServer()
-	rpcs.Register(tw)
-	lis, err := net.Listen("tcp", ":0")
-	if err != nil {
-		log.Error("listen error 1:", err)
-	}
-	tw.lis = lis
-	go func() {
-		for {
-			conn, err := tw.lis.Accept()
-			if err != nil {
-				continue
-			}
-			go rpcs.ServeConn(conn)
-		}
-	}()
-}
-
 // Stop TimeWheel
 func (tw *TimeWheel) Stop() {
 	tw.stopChannel <- true
@@ -131,17 +109,18 @@ func (tw *TimeWheel) IsRunning() bool {
 	return tw.isRunning
 }
 
-func (tw *TimeWheel) Finished(args interface{}, reply interface{}) error {
-	tw.taskRecords.Range(func(k, v interface{}) bool {
-		if k == nil && v == nil {
-			reply = nil
-			return true
-		}
-		reply = nil
-		return false
-	})
-	return nil
-}
+//
+//func (tw *TimeWheel) Finished(args interface{}, reply foo) error {
+//	tw.taskRecords.Range(func(k, v interface{}) bool {
+//		if k == nil && v == nil {
+//			reply.bar = true
+//			return true
+//		}
+//		reply.bar = false
+//		return false
+//	})
+//	return nil
+//}
 
 // AddTask RPC for add task
 // @param interval    interval of the task
@@ -291,11 +270,24 @@ func (tw *TimeWheel) taskExe(task *Task) {
 
 	//write to the local cache
 	WriteToMap(task.key)
-	data := task
+
+	data := &WriteDataByLine{
+		StopTime:  task.stopTime,
+		TaskId:    task.key,
+		Duration:  task.interval,
+		StartTime: task.createdTime.Unix(),
+	}
+
+	//write to local log
+	writeCsvByLine(Filepath+logFilename, data)
+
 	//write to other servers' log, mark as completed by paxos
 	log.Info("origin data is: ", data)
 	value := p.Propose(data)
 	log.Info("propose value is: ", value)
+
+	p.round = proposerID
+	p.number = 0
 }
 
 // get pos and circle by task creation time

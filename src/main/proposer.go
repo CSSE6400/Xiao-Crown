@@ -1,4 +1,4 @@
-package paxos
+package main
 
 import (
 	"strconv"
@@ -20,8 +20,8 @@ type Proposer struct {
 	mutex sync.Mutex
 }
 
-func (p *Proposer) Propose(v interface{}) interface{} {
-	p.round = p.round + numMachines
+func (p *Proposer) Propose(v *WriteDataByLine) interface{} {
+	p.round = p.round + 1
 	p.number = p.round<<16 | p.id
 	log.Info(" p.round: ", p.round, " p.number: ", p.number)
 
