@@ -111,8 +111,7 @@ Randomly set new node or beboot exist node or shutdown exist node and see if the
 
 
 ## Critique
-Initially, we were trying to build a distributed job scheduler that can regist any arbitrary task in any arbitrary form, a binary executable or a script.
-Our project is well designed. Our result shows that all triggered tasks will execute on time, and all machines have the same output.
+Initially, we were trying to build a distributed job scheduler that can regist any arbitrary task in any arbitrary form, a binary executable or a script. But it is hard to make a good abstraction of it. Instead we used a built-in task to verify our paxos and timewheel part. This part in our project is considered well designed. Our result shows that all triggered tasks will execute on time, and all machines have the same output.
 
 However, as we mentioned in the trade-offs section, there is network latency. The paxos algorithm uses so many rpc calls to ensure the consistancy. That is, acceptor will distribute tasks and send the log output to the other machines. There might be some effiect ways to avoid the huge amount of rpc. It is worth to further investigate.
 
