@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/rpc"
 	"strconv"
 	"sync"
 	"time"
@@ -97,6 +98,26 @@ func (tw *TimeWheel) startTW() {
 	tw.ticker = time.NewTicker(tw.interval)
 	go tw.start(time.Now())
 	tw.isRunning = true
+}
+
+// This method starts a RPC server for tw
+func (tw *TimeWheel) serverTW() {
+	rpcs := rpc.NewServer()
+	rpcs.Register(tw)
+	lis, err := net.Listen("tcp", ":0")
+	if err != nil {
+		log.Error("listen error 1:", err)
+	}
+	tw.lis = lis
+	go func() {
+		for {
+			conn, err := tw.lis.Accept()
+			if err != nil {
+				continue
+			}
+			go rpcs.ServeConn(conn)
+		}
+	}()
 }
 
 // Stop TimeWheel
