@@ -1,0 +1,7 @@
+Papers:
+1. Lamport, Leslie. "Paxos Made Simple." ACM SIGACT News (Distributed Computing Column) 32, 4 (Whole Number 121, December 2001) | December 2001 , pp. 51-58
+2. Leslie Lamport. 1998. The part-time parliament. ACM Trans. Comput. Syst. 16, 2 (May 1998), 133–169. https://doi.org/10.1145/279227.279229
+
+Repos:
+https://github.com/tangwz/paxos/tree/rpc
+https://github.com/lk668/timewheel
