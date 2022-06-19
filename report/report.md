@@ -101,21 +101,22 @@ One more trade-off is we decided to not implement learner role in paxos. In paxo
 ## Evaluation
 Our test roughly separated into two parts: paxos and timewheel. Our priority objective is to ensure the functionality of our system is implemented correctly. Functionality is the capability of the software to provide functions which meet stated and implied needs when the software is used under specified conditions. It also has to be reliable, which means  our system can maintain some level of performance when used under specified conditions. Efficiency is also important to our system, we hope our system able to handle a large number of requests and maintain low usage of computational resources.
 
+For testing methodology, we performed our test in a white-box way. Our test is based on internal functions, methods, inside modules, inter-module, inter-subsystem, inter-system, structure. 
+
 ### Timewheel
-We firstly tested the program on our own laptop. We simulate 5 nodes under same machine to ensure a robust network environment. We setup to regist all tasks using only one node. By doing this, we minimize the interaction between timewheel and paxos, it allow us to focus on test if timewheel is implemented correctly. We use a csv file with list of tuples to represent ``{countdownTime, job}``. We verified the execution log to see if tasks were registed. We also compare the registration time and the execution time of each task to verify if tasks were actually executed after ``countdownTime`` times. In this situation all tasks are correctly registed and executed at a right time. For the performance concern, we measured the registration time, it takes 232ms to regist 10 thousand tasks. However, again, this is a single machine simulation, the number does not worth to take as a reference. 
+We firstly tested the program on our own laptop. We simulate 5 nodes under same machine to ensure a robust network environment. We setup to regist all tasks using only one node. By doing this, we minimize the interaction between timewheel and paxos, it allow us to focus on test if timewheel is implemented correctly. 
+
+We use a csv file with list of tuples to represent ``{countdownTime, job}``. We verified the execution log to see if tasks were registed. We also compare the registration time and the execution time of each task to verify if tasks were actually executed after ``countdownTime`` times. In this situation all tasks are correctly registed and executed at a right time. For the performance concern, we measured the registration time, it takes 232ms to regist 10 thousand tasks. However, again, this is a single machine simulation, the number does not worth to take as a reference. 
 
 
 ### Paxos
+In order to test paxos under a real network environment, we rent some virtual machines on Oracle Cloud. We setup three oracle cloud instance with CentOS.
+First we regist all tasks from a single node, So the cluster will have only one proposer. In this reduced situation, all tasks are correctly replicated, registed and executed. 
 
-We regist all tasks from a single node, So the cluster will have only one proposer. In this reduced situation, all tasks are correctly registed and executed. 
+When single proposer scenario success, We setup multiple different csv files for each machine so that every nodes will propose.
+For three machines, it takes 16 minutes to finish 10 thousand tasks. All tasks are executed and all logs have the same output. Therefore, our program is able to work correctly under normal circumstances.
 
-When single machine success, we tested the code on three oracle cloud instance with CentOS. We open three terminal and setup rpc connection to start the program. 
-
-We setup different csv files on different machines so that every nodes will propose.
-For three machines, it takes 16 minutes to finish 10 thousand tasks. All tasks are executed and all logs have the same output. Therefore, our program is successed.
-
-### Scalability
-Randomly set new node or beboot exist node or shutdown exist node and see if the service still running correctly.
+Next we test if paxos fail-over and redo log would work. We shutdown and reboot a running node to see what happens. Turns out, the service is still running, so the single failure will not effect whole service. After reboot, re-established the connection to other nodes and end up with same output compare to others. We believe this indicate that log catch-up is done correctly.
 
 
 
