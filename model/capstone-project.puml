@@ -1,0 +1,131 @@
+@startuml
+namespace main {
+    class Acceptor << (S,Aquamarine) >> {
+        - lis net.Listener
+        - id int
+        - promiseNumber int
+        - acceptedNumber int
+        - acceptedValue *WriteDataByLine
+        - learners []int
+        - mutex sync.Mutex
+
+        - server() 
+        - close() 
+
+        + LockAcceptor(args *PaxosMsgArgs, reply *PaxosMsgReply) error
+        + Prepare(args *PaxosMsgArgs, reply *PaxosMsgReply) error
+        + Accept(args *PaxosMsgArgs, reply *PaxosMsgReply) error
+
+    }
+    class AddTaskArgs << (S,Aquamarine) >> {
+        - interval time.Duration
+        - uuid int
+        - execTime time.Time
+        - taskJob <font color=blue>interface</font>{}
+
+    }
+    class AddTaskReply << (S,Aquamarine) >> {
+        - stupid int
+
+    }
+    class BackupArgs << (S,Aquamarine) >> {
+        + Interval time.Duration
+        + Uuid int
+
+    }
+    class BackupReply << (S,Aquamarine) >> {
+        + Msg string
+        + Code int
+
+    }
+    class FileLock << (S,Aquamarine) >> {
+        - dir string
+        - f *os.File
+
+        + Lock() error
+        + Unlock() error
+
+    }
+    class PaxosMsgArgs << (S,Aquamarine) >> {
+        + Number int
+        + Value *WriteDataByLine
+        + From int
+        + To int
+
+    }
+    class PaxosMsgReply << (S,Aquamarine) >> {
+        + Ok bool
+        + Number int
+        + Value *WriteDataByLine
+
+    }
+    class Proposer << (S,Aquamarine) >> {
+        - id int
+        - round int
+        - number int
+        - acceptors []int
+        - mutex sync.Mutex
+
+        - majority() int
+
+        + Propose(v *WriteDataByLine) <font color=blue>interface</font>{}
+
+    }
+    class Task << (S,Aquamarine) >> {
+        - key <font color=blue>interface</font>{}
+        - interval time.Duration
+        - createdTime time.Time
+        - pos int
+        - circle int
+        - job Job
+        - stopTime int64
+
+    }
+    class TimeWheel << (S,Aquamarine) >> {
+        - interval time.Duration
+        - slots []*list.List
+        - ticker *time.Ticker
+        - currentPos int
+        - slotNums int
+        - addTaskChannel <font color=blue>chan</font> *Task
+        - removeTaskChannel <font color=blue>chan</font> *Task
+        - stopChannel <font color=blue>chan</font> bool
+        - taskRecords *sync.Map
+        - isRunning bool
+        - finishedTasks *sync.Map
+        - mutex sync.Mutex
+        - lis net.Listener
+
+        - serverTW() 
+        - startTW() 
+        - initSlots() 
+        - start(startTime time.Time) 
+        - checkAndRunTask() 
+        - addTask(task *Task) 
+        - taskExe(task *Task) 
+        - getPosAndCircleByCreatedTime(createdTime time.Time, d time.Duration, key <font color=blue>interface</font>{}) (int, int)
+
+        + Backup(args *BackupArgs, reply *BackupReply) error
+        + Stop() 
+        + IsRunning() bool
+        + AddTask(args *AddTaskArgs, reply *AddTaskReply) error
+
+    }
+    class WriteDataByLine << (S,Aquamarine) >> {
+        + TaskId <font color=blue>interface</font>{}
+        + Duration time.Duration
+        + StartTime int64
+        + StopTime int64
+
+    }
+    class main.Job << (T, #FF7700) >>  {
+    }
+    class writeData << (S,Aquamarine) >> {
+        - writeData []WriteDataByLine
+
+    }
+}
+
+
+"main.<font color=blue>func</font>(<font color=blue>interface</font>{}) " #.. "main.Job"
+@enduml
